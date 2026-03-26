@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI · Din nye kollega – Kursusevaluering</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #2a6b3f;
+    --green-light: #e8f3ec;
+    --green-mid: #4a9463;
+    --ink: #1a1a1a;
+    --soft: #f5f3ef;
+    --border: #d8d3cb;
+    --muted: #7a7570;
+    --white: #ffffff;
+    --accent: #c8a84b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--soft); color: var(--ink); min-height: 100vh; }
+  .page-header { background: var(--white); border-bottom: 1px solid var(--border); padding: 28px 48px; display: flex; align-items: baseline; gap: 12px; }
+  .page-header .ai-label { font-weight: 500; font-size: 1.4rem; color: var(--green); }
+  .page-header .tagline { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.4rem; color: var(--green); }
+  .survey-wrap { max-width: 680px; margin: 48px auto; padding: 0 24px 80px; }
+  .card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 36px 40px; margin-bottom: 24px; transition: box-shadow 0.2s; }
+  .card:hover { box-shadow: 0 4px 20px rgba(42,107,63,0.08); }
+  .question-label { font-size: 0.97rem; font-weight: 500; color: var(--ink); margin-bottom: 20px; line-height: 1.55; }
+  .question-label .required { color: var(--green); margin-right: 2px; }
+  .slider-group { padding: 8px 0 4px; }
+  .slider-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-bottom: 10px; font-weight: 300; }
+  .slider-row { display: flex; align-items: center; gap: 14px; }
+  input[type="range"] { -webkit-appearance: none; appearance: none; flex: 1; height: 4px; background: linear-gradient(to right, var(--green) 0%, var(--border) 0%); border-radius: 4px; outline: none; cursor: pointer; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--white); border: 2px solid var(--green); cursor: pointer; box-shadow: 0 2px 6px rgba(42,107,63,0.2); transition: transform 0.15s; }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .slider-value { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 500; color: var(--green); background: var(--green-light); flex-shrink: 0; }
+  .stars { display: flex; gap: 10px; margin-top: 4px; }
+  .star { cursor: pointer; font-size: 2rem; color: var(--border); transition: color 0.12s, transform 0.12s; line-height: 1; }
+  .star.active { color: var(--accent); }
+  .star:hover { transform: scale(1.15); }
+  .options-list { display: flex; flex-direction: column; gap: 12px; }
+  .option-item { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 10px 14px; border-radius: 8px; border: 1px solid transparent; transition: background 0.15s, border-color 0.15s; }
+  .option-item:hover { background: var(--green-light); border-color: var(--green-mid); }
+  .option-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+  .option-item span { font-size: 0.95rem; }
+  .option-item.checked { background: var(--green-light); border-color: var(--green); }
+  .text-input { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink); background: var(--white); outline: none; transition: border-color 0.15s; resize: vertical; }
+  .text-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(42,107,63,0.08); }
+  .other-input-wrap { margin-top: 10px; margin-left: 30px; }
+  .submit-btn { display: block; width: 100%; padding: 16px; background: var(--green); color: var(--white); border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 8px; transition: background 0.2s, transform 0.15s; }
+  .submit-btn:hover { background: var(--green-mid); transform: translateY(-1px); }
+  .submit-btn:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
+  .success-screen { display: none; text-align: center; padding: 80px 24px; max-width: 680px; margin: 0 auto; }
+  .success-screen .checkmark { font-size: 3.5rem; margin-bottom: 20px; }
+  .success-screen h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--green); margin-bottom: 12px; }
+  .success-screen p { color: var(--muted); font-size: 0.97rem; }
+  .pdf-note { margin-top: 32px; padding: 16px 20px; background: var(--green-light); border-radius: 8px; font-size: 0.9rem; color: var(--green); }
+  .pdf-note a { color: var(--green); font-weight: 600; text-decoration: underline; }
+  .error-msg { color: #c0392b; font-size: 0.85rem; margin-top: 8px; display: none; }
+  .setup-banner { background: #fff8e1; border: 1px solid #f0c040; border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; font-size: 0.88rem; color: #7a6010; line-height: 1.6; }
+  .setup-banner strong { color: #5a4500; }
+  @media (max-width: 600px) { .card { padding: 24px 20px; } .page-header { padding: 20px 24px; } }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <span class="ai-label">AI ·</span>
+  <span class="tagline">Din nye kollega</span>
+</div>
+
+<div class="survey-wrap" id="surveyForm">
+
+  <!-- ⚠️ Denne banner forsvinder automatisk når SCRIPT_URL er sat -->
+  <div class="setup-banner" id="setupBanner">
+    <strong>⚙️ Opsætning mangler:</strong> Åbn denne fil i en teksteditor og erstat <code>DIN_SCRIPT_URL_HER</code> med din Google Apps Script URL. Se guiden i filen <em>apps-script.gs</em>.
+  </div>
+
+  <!-- Q1 -->
+  <div class="card">
+    <div class="question-label"><span class="required">*</span> Hvor lå dit niveau/viden inden for AI <strong>før</strong> kurset?</div>
+    <div class="slider-group">
+      <div class="slider-labels"><span>Ingen viden</span><span>Generel viden</span><span>Høj viden</span></div>
+      <div class="slider-row">
+        <input type="range" id="videnFor" min="0" max="10" value="0" oninput="updateSlider(this, 'valFor')">
+        <div class="slider-value" id="valFor">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="card">
+    <div class="question-label"><span class="required">*</span> Hvor ligger dit niveau/viden <strong>efter</strong> AI kurset?</div>
+    <div class="slider-group">
+      <div class="slider-labels"><span>Ingen viden</span><span>Generel viden</span><span>Høj viden</span></div>
+      <div class="slider-row">
+        <input type="range" id="videnEfter" min="0" max="10" value="0" oninput="updateSlider(this, 'valEfter')">
+        <div class="slider-value" id="valEfter">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="card">
+    <div class="question-label"><span class="required">*</span> Hvad synes du om kursets sværhedsgrad?</div>
+    <div class="slider-group">
+      <div class="slider-labels"><span>Let</span><span>Tilpas</span><span>Svært</span></div>
+      <div class="slider-row">
+        <input type="range" id="svaerhed" min="0" max="10" value="0" oninput="updateSlider(this, 'valSvaer')">
+        <div class="slider-value" id="valSvaer">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="card">
+    <div class="question-label"><span class="required">*</span> I hvilken grad levede kurset op til dine forventninger?</div>
+    <div class="stars" id="stars">
+      <span class="star" data-val="1" onclick="rateStar(1)">★</span>
+      <span class="star" data-val="2" onclick="rateStar(2)">★</span>
+      <span class="star" data-val="3" onclick="rateStar(3)">★</span>
+      <span class="star" data-val="4" onclick="rateStar(4)">★</span>
+      <span class="star" data-val="5" onclick="rateStar(5)">★</span>
+    </div>
+    <div class="error-msg" id="starError">Vælg venligst en stjernebedømmelse.</div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="card">
+    <div class="question-label"><span class="required">*</span> Hvad kommer du til at bruge, i din dagligdag? <em style="font-weight:300;color:var(--muted)">(Du må godt vælge flere)</em></div>
+    <div class="options-list">
+      <label class="option-item"><input type="checkbox" name="tools" value="ChatGPT" onchange="toggleChecked(this)"><span>ChatGPT</span></label>
+      <label class="option-item"><input type="checkbox" name="tools" value="Gemini" onchange="toggleChecked(this)"><span>Gemini</span></label>
+      <label class="option-item"><input type="checkbox" name="tools" value="Nano Banana" onchange="toggleChecked(this)"><span>Nano Banana</span></label>
+      <label class="option-item"><input type="checkbox" name="tools" value="Midjourney" onchange="toggleChecked(this)"><span>Midjourney</span></label>
+      <label class="option-item"><input type="checkbox" name="tools" value="Andet" onchange="toggleOther(this)" id="andetCheck"><span>Andet (hvilket?)</span></label>
+      <div class="other-input-wrap" id="andetWrap" style="display:none">
+        <input type="text" class="text-input" id="andetText" placeholder="Skriv her..." style="height:42px;resize:none">
+      </div>
+    </div>
+    <div class="error-msg" id="toolError">Vælg venligst mindst ét værktøj.</div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="card">
+    <div class="question-label">Eventuel feedback?</div>
+    <textarea class="text-input" id="feedback" rows="4" placeholder="Del dine tanker om kurset..."></textarea>
+  </div>
+
+  <!-- Q7 -->
+  <div class="card">
+    <div class="question-label">Hvis vi må kontakte dig for at uddybe dine svar, må du gerne skrive dit navn og din mail her:</div>
+    <input type="text" class="text-input" id="kontakt" placeholder="Navn og e-mail" style="height:46px;resize:none">
+    <p style="font-size:0.8rem;color:var(--muted);margin-top:8px;">Lades dette felt tomt, forbliver dit svar anonymt.</p>
+  </div>
+
+  <div class="pdf-note">
+    Hvis du ønsker kurset i PDF form, kan du tilgå og downloade det <a href="#">HER</a>
+  </div>
+  <br>
+  <button class="submit-btn" id="submitBtn" onclick="submitForm()">Send svar</button>
+</div>
+
+<div class="success-screen" id="successScreen">
+  <div class="checkmark">✅</div>
+  <h2>Tak for dit svar!</h2>
+  <p>Din evaluering er modtaget. Vi sætter stor pris på din feedback.</p>
+</div>
+
+<script>
+  // ▼▼▼ INDSÆT DIN GOOGLE APPS SCRIPT URL HER ▼▼▼
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0L7rUdA--pgiUiTgeFelBja_yfG6jMh20s-lJzVTbUcjaRkVrBC_uj9i_pViwNcsaAA/exec";
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+  // Hide setup banner if URL is set
+  if (SCRIPT_URL !== "DIN_SCRIPT_URL_HER") {
+    document.getElementById('setupBanner').style.display = 'none';
+  }
+
+  let starRating = 0;
+
+  function updateSlider(input, valueId) {
+    const val = input.value;
+    document.getElementById(valueId).textContent = val;
+    const pct = (val / input.max) * 100;
+    input.style.background = `linear-gradient(to right, var(--green) ${pct}%, var(--border) ${pct}%)`;
+  }
+
+  function rateStar(n) {
+    starRating = n;
+    document.querySelectorAll('.star').forEach(s => {
+      s.classList.toggle('active', parseInt(s.dataset.val) <= n);
+    });
+    document.getElementById('starError').style.display = 'none';
+  }
+
+  function toggleChecked(cb) {
+    cb.closest('.option-item').classList.toggle('checked', cb.checked);
+    document.getElementById('toolError').style.display = 'none';
+  }
+
+  function toggleOther(cb) {
+    toggleChecked(cb);
+    document.getElementById('andetWrap').style.display = cb.checked ? 'block' : 'none';
+  }
+
+  async function submitForm() {
+    let valid = true;
+
+    if (starRating === 0) {
+      document.getElementById('starError').style.display = 'block';
+      valid = false;
+    }
+    const tools = [...document.querySelectorAll('input[name="tools"]:checked')].map(c => c.value);
+    if (tools.length === 0) {
+      document.getElementById('toolError').style.display = 'block';
+      valid = false;
+    }
+    if (!valid) return;
+
+    const andetTekst = document.getElementById('andetText').value.trim();
+    const toolsLabel = tools.map(t => t === 'Andet' && andetTekst ? `Andet: ${andetTekst}` : t).join(', ');
+
+    const payload = {
+      videnFor:   document.getElementById('videnFor').value,
+      videnEfter: document.getElementById('videnEfter').value,
+      svaerhed:   document.getElementById('svaerhed').value,
+      stjerner:   starRating,
+      vaerktoejer: toolsLabel,
+      feedback:   document.getElementById('feedback').value.trim(),
+      kontakt:    document.getElementById('kontakt').value.trim() || 'Anonym',
+    };
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sender...';
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch (e) {
+      console.warn('Fetch fejl (kan ignoreres med no-cors):', e);
+    }
+
+    document.getElementById('surveyForm').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
